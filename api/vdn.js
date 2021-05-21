@@ -62,10 +62,12 @@ const buildXml = (feeds) => {
   return xml;
 };
 
-const main = async () => {
+/**
+ * @param {import('@vercel/node').VercelRequest} req
+ * @param {import('@vercel/node').VercelResponse} res
+ */
+module.exports = async (req, res) => {
   const feeds = await fetchFeeds();
   const xml = buildXml(feeds);
-  console.log(xml);
+  res.status(200).send(xml);
 };
-
-main();

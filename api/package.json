@@ -12,5 +12,9 @@
   "dependencies": {
     "puppeteer": "^9.1.1",
     "xmlbuilder2": "^2.4.1"
+  },
+  "devDependencies": {
+    "@vercel/node": "^1.10.0",
+    "vercel": "^22.0.1"
   }
 }
