@@ -1,5 +1,6 @@
 // @ts-check
-const puppeteer = require("puppeteer");
+const chrome = require("chrome-aws-lambda");
+const puppeteer = require("puppeteer-core");
 const { create } = require("xmlbuilder2");
 
 /**
@@ -14,7 +15,11 @@ const { create } = require("xmlbuilder2");
  * @returns {Promise<Feed[]>}
  */
 const fetchFeeds = async () => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: chrome.args,
+    executablePath: await chrome.executablePath,
+    headless: chrome.headless,
+  });
   const page = await browser.newPage();
 
   await page.goto("https://vuejsdevelopers.com/newsletter");
