@@ -1,20 +1,16 @@
-// @ts-check
-const chrome = require("chrome-aws-lambda");
-const puppeteer = require("puppeteer-core");
-const { create } = require("xmlbuilder2");
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import chrome from "chrome-aws-lambda";
+import puppeteer from "puppeteer-core";
+import { create } from "xmlbuilder2";
 
-/**
- * @typedef {object} Feed
- * @property {string} href
- * @property {string} title
- * @property {string} date
- * @property {string} desc
- */
+type Feed = {
+  href: string;
+  title: string;
+  date: string;
+  desc: string;
+};
 
-/**
- * @returns {Promise<Feed[]>}
- */
-const fetchFeeds = async () => {
+const fetchFeeds = async (): Promise<Feed[]> => {
   const browser = await puppeteer.launch({
     args: chrome.args,
     executablePath: process.env.AWS_LAMBDA_FUNCTION_VERSION
@@ -26,16 +22,14 @@ const fetchFeeds = async () => {
   await page.goto("https://vuejsdevelopers.com/newsletter");
 
   const items = await page.$eval(".past-issues", (elemant) =>
-    Array.from(elemant.querySelectorAll("a")).map(
-      /** @returns {Feed} */ (el) => {
-        const href = el.href;
-        const text = el.innerText;
-        const [line, desc] = text.split(/\n+/);
-        const [title, date] = line.split(", ");
+    Array.from(elemant.querySelectorAll("a")).map((el): Feed => {
+      const href = el.href;
+      const text = el.innerText;
+      const [line, desc] = text.split(/\n+/);
+      const [title, date] = line.split(", ");
 
-        return { href, title, date, desc };
-      }
-    )
+      return { href, title, date, desc };
+    })
   );
 
   browser.close();
@@ -43,17 +37,13 @@ const fetchFeeds = async () => {
   return items;
 };
 
-/**
- * @param {Feed[]} feeds
- * @returns {string}
- */
-const buildXml = (feeds) => {
+const buildXml = (feeds: Feed[]): string => {
   const root = create().ele("rss").att("version", "2.0");
 
   const channel = root.ele("channel");
   channel.ele("title").txt("Vue.js Developers Newsletter");
   channel.ele("link").txt("https://vuejsdevelopers.com/newsletter/");
-  channel.ele("description");
+  channel.ele("description").txt("The best Vue articles in your inbox, weekly");
 
   feeds.forEach((v) => {
     const item = channel.ele("item");
@@ -68,11 +58,7 @@ const buildXml = (feeds) => {
   return xml;
 };
 
-/**
- * @param {import('@vercel/node').VercelRequest} req
- * @param {import('@vercel/node').VercelResponse} res
- */
-module.exports = async (req, res) => {
+module.exports = async (req: VercelRequest, res: VercelResponse) => {
   const feeds = await fetchFeeds();
   const xml = buildXml(feeds);
   res.status(200).send(xml);
