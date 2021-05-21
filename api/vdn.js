@@ -17,8 +17,9 @@ const { create } = require("xmlbuilder2");
 const fetchFeeds = async () => {
   const browser = await puppeteer.launch({
     args: chrome.args,
-    executablePath: await chrome.executablePath,
-    headless: chrome.headless,
+    executablePath: process.env.AWS_LAMBDA_FUNCTION_VERSION
+      ? await chrome.executablePath
+      : "C:\\Program Files\\Google\\Chrome\\Application\\Chrome.exe",
   });
   const page = await browser.newPage();
 
