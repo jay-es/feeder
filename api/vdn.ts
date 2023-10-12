@@ -1,4 +1,5 @@
-import { VercelRequest, VercelResponse } from "@vercel/node";
+import { kv } from "@vercel/kv";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import chrome from "chrome-aws-lambda";
 import puppeteer from "puppeteer-core";
 import { create } from "xmlbuilder2";
@@ -21,8 +22,8 @@ const fetchFeeds = async (): Promise<Feed[]> => {
 
   await page.goto("https://vuejsdevelopers.com/newsletter");
 
-  const items = await page.$eval(".past-issues", (elemant) =>
-    Array.from(elemant.querySelectorAll("a")).map((el): Feed => {
+  const items = await page.$eval(".past-issues", (element) =>
+    Array.from(element.querySelectorAll("a")).map((el): Feed => {
       const href = el.href;
       const text = el.innerText;
       const [line, desc] = text.split(/\n+/);
@@ -58,8 +59,19 @@ const buildXml = (feeds: Feed[]): string => {
   return xml;
 };
 
-module.exports = async (req: VercelRequest, res: VercelResponse) => {
+export default async (req: VercelRequest, res: VercelResponse) => {
+  const KV_KEY = "vdn";
+  const KV_EXPIRE = 24 * 60 * 60; // 24H
+
+  // キャッシュがあれば返す
+  const cache = await kv.get(KV_KEY);
+  if (cache) {
+    return res.status(200).send(cache);
+  }
+
   const feeds = await fetchFeeds();
   const xml = buildXml(feeds);
+  await kv.set(KV_KEY, xml, { ex: KV_EXPIRE });
+
   res.status(200).send(xml);
 };
