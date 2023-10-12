@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import chrome from "chrome-aws-lambda";
 import puppeteer from "puppeteer-core";
 import { create } from "xmlbuilder2";
@@ -21,8 +21,8 @@ const fetchFeeds = async (): Promise<Feed[]> => {
 
   await page.goto("https://vuejsdevelopers.com/newsletter");
 
-  const items = await page.$eval(".past-issues", (elemant) =>
-    Array.from(elemant.querySelectorAll("a")).map((el): Feed => {
+  const items = await page.$eval(".past-issues", (element) =>
+    Array.from(element.querySelectorAll("a")).map((el): Feed => {
       const href = el.href;
       const text = el.innerText;
       const [line, desc] = text.split(/\n+/);
@@ -58,7 +58,7 @@ const buildXml = (feeds: Feed[]): string => {
   return xml;
 };
 
-module.exports = async (req: VercelRequest, res: VercelResponse) => {
+export default async (req: VercelRequest, res: VercelResponse) => {
   const feeds = await fetchFeeds();
   const xml = buildXml(feeds);
   res.status(200).send(xml);
