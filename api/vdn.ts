@@ -45,6 +45,7 @@ const buildXml = (feeds: Feed[]): string => {
   channel.ele("title").txt("Vue.js Developers Newsletter");
   channel.ele("link").txt("https://vuejsdevelopers.com/newsletter/");
   channel.ele("description").txt("The best Vue articles in your inbox, weekly");
+  channel.ele("lastBuildDate").txt(new Date().toUTCString());
 
   feeds.forEach((v) => {
     const item = channel.ele("item");
