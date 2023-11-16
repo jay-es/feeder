@@ -8,8 +8,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@vercel/kv": "^0.2.3",
-    "chrome-aws-lambda": "^8.0.2",
+    "@sparticuz/chromium": "^119.0.0",
     "puppeteer-core": "^8.0.0",
     "xmlbuilder2": "^2.4.1"
   },
