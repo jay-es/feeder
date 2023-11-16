@@ -1,6 +1,5 @@
-import { kv } from "@vercel/kv";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import chrome from "chrome-aws-lambda";
+import chrome from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 import { create } from "xmlbuilder2";
 
@@ -15,7 +14,7 @@ const fetchFeeds = async (): Promise<Feed[]> => {
   const browser = await puppeteer.launch({
     args: chrome.args,
     executablePath: process.env.AWS_LAMBDA_FUNCTION_VERSION
-      ? await chrome.executablePath
+      ? await chrome.executablePath()
       : "C:\\Program Files\\Google\\Chrome\\Application\\Chrome.exe",
   });
   const page = await browser.newPage();
@@ -61,18 +60,12 @@ const buildXml = (feeds: Feed[]): string => {
 };
 
 export default async (req: VercelRequest, res: VercelResponse) => {
-  const KV_KEY = "vdn";
-  const KV_EXPIRE = 24 * 60 * 60; // 24H
-
-  // キャッシュがあれば返す
-  const cache = await kv.get(KV_KEY);
-  if (cache) {
-    return res.status(200).send(cache);
-  }
-
   const feeds = await fetchFeeds();
   const xml = buildXml(feeds);
-  await kv.set(KV_KEY, xml, { ex: KV_EXPIRE });
 
+  res.setHeader(
+    "Cache-Control",
+    "max-age=0, s-maxage=1, stale-while-revalidate"
+  );
   res.status(200).send(xml);
 };
