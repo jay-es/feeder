@@ -13,10 +13,7 @@ type Feed = {
 const fetchFeeds = async (): Promise<Feed[]> => {
   const browser = process.env.AWS_LAMBDA_FUNCTION_VERSION
     ? await launchChromium()
-    : await chromium.launch({
-        executablePath:
-          "C:\\Program Files\\Google\\Chrome\\Application\\Chrome.exe",
-      });
+    : await chromium.launch({ channel: "chrome" });
   const page = await browser.newPage();
 
   await page.goto("https://vuejsdevelopers.com/newsletter");
