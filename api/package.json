@@ -14,6 +14,7 @@
     "xmlbuilder2": "^2.4.1"
   },
   "devDependencies": {
-    "@vercel/node": "^1.10.0"
+    "@vercel/node": "^1.10.0",
+    "typescript": "^5.4.5"
   }
 }
