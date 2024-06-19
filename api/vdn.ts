@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { launchChromium } from "playwright-aws-lambda";
-import { chromium } from "playwright-core";
+import chrome from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 import { create } from "xmlbuilder2";
 
 type Feed = {
@@ -11,9 +11,12 @@ type Feed = {
 };
 
 const fetchFeeds = async (): Promise<Feed[]> => {
-  const browser = process.env.AWS_LAMBDA_FUNCTION_VERSION
-    ? await launchChromium()
-    : await chromium.launch({ channel: "chrome" });
+  const browser = await puppeteer.launch({
+    args: chrome.args,
+    ...(process.env.AWS_LAMBDA_FUNCTION_VERSION
+      ? { executablePath: await chrome.executablePath() }
+      : { channel: "chrome" }),
+  });
   const page = await browser.newPage();
 
   await page.goto("https://vuejsdevelopers.com/newsletter");
