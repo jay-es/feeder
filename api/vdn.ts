@@ -65,7 +65,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   res.setHeader(
     "Cache-Control",
-    "max-age=0, s-maxage=1, stale-while-revalidate=86400"
+    "max-age=0, s-maxage=21600, stale-while-revalidate=86400"
   );
   res.status(200).send(xml);
+};
+
+export const config = {
+  maxDuration: 15,
 };
